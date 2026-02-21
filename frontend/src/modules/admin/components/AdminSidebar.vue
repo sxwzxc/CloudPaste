@@ -605,7 +605,15 @@ const visibleMenuItems = computed(() => {
 
   // 任务管理：有挂载权限即可访问，具体任务根据权限类型在列表内过滤
   if (props.permissions.mount) {
-    items.push({ id: "tasks", name: t("admin.sidebar.tasks"), icon: "list-bullet", type: "item", routeName: "AdminTasks" });
+    items.push({
+      id: "task-management",
+      name: t("admin.sidebar.taskManagement"),
+      icon: "clipboard-list",
+      type: "group",
+      children: [
+        { id: "tasks", name: t("admin.sidebar.tasks"), icon: "list-bullet", type: "item", routeName: "AdminTasks" },
+      ],
+    });
   }
 
   // 所有API密钥用户都可以访问账户管理（用于查看信息和登出）

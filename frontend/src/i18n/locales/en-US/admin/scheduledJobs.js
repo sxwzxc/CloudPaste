@@ -207,6 +207,16 @@ export default {
       description: 'Click the "Create Job" button above to create your first scheduled job',
     },
 
+    // Today's schedule
+    today: {
+      sectionTitle: "Today's Schedule",
+      pending: "Pending",
+      completed: "Completed",
+      running: "Running",
+      noPendingJobs: "No pending jobs today",
+      noCompletedJobs: "No completed jobs today",
+    },
+
     // Stats & heatmap
     stats: {
       sectionTitle: "Statistics & Heatmap",

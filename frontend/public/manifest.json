@@ -87,6 +87,50 @@
           "type": "image/png"
         }
       ]
+    },
+    {
+      "name": "定时任务日历",
+      "short_name": "日历",
+      "description": "查看定时任务日历和今日日程",
+      "url": "/admin/scheduled-jobs",
+      "icons": [
+        {
+          "src": "icons/icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "widgets": [
+    {
+      "name": "CloudPaste 定时任务日历",
+      "short_name": "任务日历",
+      "description": "显示今日定时任务日程，包含待执行和已完成任务",
+      "tag": "scheduled-jobs-calendar",
+      "url": "/admin/scheduled-jobs",
+      "screenshots": [
+        {
+          "src": "icons/icon-512.png",
+          "sizes": "512x512",
+          "type": "image/png",
+          "label": "定时任务日历视图"
+        }
+      ],
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ],
+      "backgrounds": [
+        {
+          "src": "icons/icon-512-maskable.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

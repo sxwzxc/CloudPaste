@@ -206,6 +206,16 @@ export default {
       description: '点击上方"新建任务"按钮创建第一个定时任务',
     },
 
+    // 今日日程
+    today: {
+      sectionTitle: "今日日程",
+      pending: "待执行",
+      completed: "已完成",
+      running: "运行中",
+      noPendingJobs: "今日无待执行任务",
+      noCompletedJobs: "今日暂无已完成任务",
+    },
+
     // 统计与热力图
     stats: {
       sectionTitle: "统计与热力图",

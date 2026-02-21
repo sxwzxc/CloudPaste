@@ -5,34 +5,6 @@
 
       <!-- 右侧按钮组 -->
       <div class="flex items-center gap-2">
-        <!-- 搜索按钮 -->
-        <button
-          @click="handleOpenSearchModal"
-          class="flex items-center gap-2 px-3 py-1.5 rounded-md border transition-all duration-200 hover:shadow-sm"
-          :class="
-            darkMode
-              ? 'border-gray-600 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-gray-200'
-              : 'border-gray-300 bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-700'
-          "
-          :title="$t('search.title')"
-        >
-          <!-- 搜索图标 -->
-          <IconSearch size="sm" class="w-4 h-4" aria-hidden="true" />
-
-          <!-- 搜索文字（在小屏幕上隐藏） -->
-          <span class="hidden sm:inline text-sm text-gray-500" :class="darkMode ? 'text-gray-400' : 'text-gray-500'">
-            {{ $t("search.placeholder") }}
-          </span>
-
-          <!-- 快捷键提示（在大屏幕上显示） -->
-          <kbd
-            class="hidden lg:inline-flex items-center px-1.5 py-0.5 text-xs font-mono rounded border"
-            :class="darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-gray-100 border-gray-300 text-gray-600'"
-          >
-            Ctrl K
-          </kbd>
-        </button>
-
         <!-- 设置按钮 -->
         <button
           @click="handleOpenSettingsDrawer"
@@ -260,6 +232,27 @@
 
               <!-- 目录列表 -->
               <div class="min-h-[400px]">
+                <!-- 内嵌搜索触发栏 -->
+                <div v-if="hasPermission" class="px-3 pt-3 pb-1">
+                  <button
+                    @click="handleOpenSearchModal"
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-md border text-sm transition-all duration-200 hover:shadow-sm text-left"
+                    :class="
+                      darkMode
+                        ? 'border-gray-600 bg-gray-700/50 hover:bg-gray-700 text-gray-400 hover:text-gray-300'
+                        : 'border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-600'
+                    "
+                  >
+                    <IconSearch size="sm" class="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+                    <span class="flex-1 truncate">{{ $t("search.placeholder") }}</span>
+                    <kbd
+                      class="hidden sm:inline-flex items-center px-1.5 py-0.5 text-xs font-mono rounded border flex-shrink-0"
+                      :class="darkMode ? 'bg-gray-600 border-gray-500 text-gray-300' : 'bg-white border-gray-300 text-gray-500'"
+                    >
+                      Ctrl K
+                    </kbd>
+                  </button>
+                </div>
                 <DirectoryList
                   ref="directoryListRef"
                   :current-path="currentPath"

@@ -862,6 +862,53 @@ const jobColumnClasses = {
 
 // 注意：初始化逻辑已合并到上面的 onMounted 钩子中
 
+// ==================== 今日日程 ====================
+const todayStart = computed(() => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+});
+
+const todayEnd = computed(() => {
+  const d = new Date();
+  d.setHours(23, 59, 59, 999);
+  return d;
+});
+
+const todayFormatted = computed(() => {
+  const _ = currentTick.value;
+  const now = new Date();
+  return now.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric", weekday: "short" });
+});
+
+// 今日待执行/运行中的任务：nextRunAfter 在今天范围内，或 runtimeState 为 running/pending
+const todayPendingJobs = computed(() => {
+  const _ = currentTick.value;
+  const start = todayStart.value;
+  const end = todayEnd.value;
+  return jobs.value.filter((job) => {
+    if (!job.enabled) return false;
+    if (job.runtimeState === "running") return true;
+    if (job.nextRunAfter) {
+      const next = new Date(job.nextRunAfter);
+      if (next >= start && next <= end) return true;
+    }
+    return false;
+  });
+});
+
+// 今日已完成的任务：lastRunFinishedAt 或 lastRunStartedAt 在今天范围内
+const todayCompletedJobs = computed(() => {
+  const start = todayStart.value;
+  const end = todayEnd.value;
+  return jobs.value.filter((job) => {
+    const lastRunTime = job.lastRunFinishedAt || job.lastRunStartedAt;
+    if (!lastRunTime) return false;
+    const d = new Date(lastRunTime);
+    return d >= start && d <= end;
+  });
+});
+
 </script>
 
 <template>
@@ -933,6 +980,78 @@ const jobColumnClasses = {
             <input v-model="searchQuery" type="text" :placeholder="t('admin.scheduledJobs.toolbar.search')" class="pl-8 pr-3 py-1 rounded-md border text-sm w-48 focus:outline-none focus:ring-2 focus:ring-primary-500" :class="darkMode ? 'bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-500' : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400'" />
             <IconSearch class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" :class="darkMode ? 'text-gray-500' : 'text-gray-400'" />
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 今日日程 -->
+    <div class="mb-4 rounded-lg border shadow-sm overflow-hidden" :class="darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+      <!-- 标题栏 -->
+      <div class="flex items-center justify-between px-4 py-3 border-b" :class="darkMode ? 'border-gray-700' : 'border-gray-200'">
+        <div class="flex items-center gap-2">
+          <svg class="h-4 w-4" :class="darkMode ? 'text-primary-400' : 'text-primary-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <h3 class="text-sm font-semibold" :class="darkMode ? 'text-gray-200' : 'text-gray-700'">
+            {{ t('admin.scheduledJobs.today.sectionTitle') }}
+          </h3>
+        </div>
+        <span class="text-xs" :class="darkMode ? 'text-gray-400' : 'text-gray-500'">{{ todayFormatted }}</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x" :class="darkMode ? 'divide-gray-700' : 'divide-gray-200'">
+        <!-- 待执行/运行中 -->
+        <div class="p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="h-2 w-2 rounded-full bg-yellow-400"></span>
+            <span class="text-xs font-medium" :class="darkMode ? 'text-gray-300' : 'text-gray-600'">
+              {{ t('admin.scheduledJobs.today.pending') }}
+              <span class="ml-1 px-1.5 py-0.5 text-xs rounded-full" :class="darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'">{{ todayPendingJobs.length }}</span>
+            </span>
+          </div>
+          <div v-if="todayPendingJobs.length === 0" class="text-xs" :class="darkMode ? 'text-gray-500' : 'text-gray-400'">
+            {{ t('admin.scheduledJobs.today.noPendingJobs') }}
+          </div>
+          <ul v-else class="space-y-2 max-h-40 overflow-y-auto">
+            <li v-for="job in todayPendingJobs" :key="job.taskId" class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span
+                  v-if="job.runtimeState === 'running'"
+                  class="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse flex-shrink-0"
+                ></span>
+                <span v-else class="h-1.5 w-1.5 rounded-full bg-yellow-400 flex-shrink-0"></span>
+                <span class="text-xs truncate" :class="darkMode ? 'text-gray-200' : 'text-gray-800'">{{ job.name || job.taskId }}</span>
+              </div>
+              <span class="text-xs flex-shrink-0" :class="darkMode ? 'text-gray-400' : 'text-gray-500'">
+                {{ job.runtimeState === 'running' ? t('admin.scheduledJobs.today.running') : (job.nextRunAfter ? formatRelativeTime(job.nextRunAfter) : '-') }}
+              </span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- 已完成 -->
+        <div class="p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="h-2 w-2 rounded-full bg-green-400"></span>
+            <span class="text-xs font-medium" :class="darkMode ? 'text-gray-300' : 'text-gray-600'">
+              {{ t('admin.scheduledJobs.today.completed') }}
+              <span class="ml-1 px-1.5 py-0.5 text-xs rounded-full" :class="darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'">{{ todayCompletedJobs.length }}</span>
+            </span>
+          </div>
+          <div v-if="todayCompletedJobs.length === 0" class="text-xs" :class="darkMode ? 'text-gray-500' : 'text-gray-400'">
+            {{ t('admin.scheduledJobs.today.noCompletedJobs') }}
+          </div>
+          <ul v-else class="space-y-2 max-h-40 overflow-y-auto">
+            <li v-for="job in todayCompletedJobs" :key="job.taskId" class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="h-1.5 w-1.5 rounded-full bg-green-400 flex-shrink-0"></span>
+                <span class="text-xs truncate" :class="darkMode ? 'text-gray-200' : 'text-gray-800'">{{ job.name || job.taskId }}</span>
+              </div>
+              <span class="text-xs flex-shrink-0" :class="darkMode ? 'text-gray-400' : 'text-gray-500'">
+                {{ job.lastRunFinishedAt ? formatDateTime(job.lastRunFinishedAt) : (job.lastRunStartedAt ? formatDateTime(job.lastRunStartedAt) : '-') }}
+              </span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
